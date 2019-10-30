@@ -39,6 +39,7 @@ tasks.withType<KotlinCompile> {
     freeCompilerArgs = listOf("-Xjsr305=strict")
     jvmTarget = "1.8"
   }
+  dependsOn("buildProd")
 }
 
 apply {
@@ -48,12 +49,16 @@ apply {
 configure<NodeExtension> {
   version = "13.0.1"
   npmVersion = "6.12.0"
-  download = false
+  download = true
+  workDir = file("${project.projectDir}/node")
+  nodeModulesDir = file("${project.projectDir}/src/main/resources/angular")
 }
 
-tasks {
-  named<NpmTask>("npmBuild") {
-    setArgs(listOf("run", "build", "--prod"))
-    dependsOn(npmInstall)
-  }
+task(name = "setupProject", type = NpmTask::class) {
+  setNpmCommand("install")
+}
+
+task(name = "buildProd", type = NpmTask::class) {
+  dependsOn("setupProject")
+  setArgs(listOf("run", "build", "--prod"))
 }
